@@ -19,6 +19,16 @@ return array(
     'configurable_event_manager' => [
     ],
 
+    'mediator' => [
+        'channels' => [
+            'getOrderData' =>
+                [
+                    'invokable' => 'Rzn\Order\Mediator\GetOrderData',
+                ],
+        ]
+
+    ],
+
     //'mediator' => require(__DIR__ . '/module.mediator.config.php'),
     //'waterfall' => require(__DIR__ . '/module.waterfall.config.php'),
     'service_manager' => [
