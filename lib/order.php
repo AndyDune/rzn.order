@@ -119,9 +119,15 @@ class Order
     protected $userId = null;
 
     /**
-     * @var null|callable
+     * @var array
      */
-    protected $dataFilter = null;
+    protected $dataFilter = [];
+
+    /**
+     * Фильтрация запускалась.
+     * @var bool
+     */
+    protected $filtered   = false;
 
     public function retrieveWithXId($id)
     {
@@ -154,10 +160,6 @@ class Order
 
     public function setStatus($value)
     {
-        if ($this->dataFilter) {
-            $value = $this->dataFilter($value, 'STATUS_ID');
-        }
-
         $this->data['STATUS_ID'] = $value;
         return $this;
     }
@@ -167,13 +169,8 @@ class Order
      */
     public function setPersonType($value)
     {
-        if ($this->dataFilter) {
-            $value = $this->dataFilter($value, 'PERSON_TYPE_ID');
-        }
-
         $this->data['PERSON_TYPE_ID'] = $value;
     }
-
 
 
     public function getStatus()
@@ -187,15 +184,33 @@ class Order
      * @param $object
      * @return $this
      */
-    public function setDataFilter($object)
+    public function addDataFilter($object)
     {
         if (!is_callable($object)) {
             throw new Exception('Фильтр данных должен имет возможность запускаться как функция');
         }
-        $this->dataFilter = $object;
+        $this->dataFilter[] = $object;
         return $this;
     }
 
+    /**
+     * Запустить цикл фильтрации данных.
+     * Используются добавленные фильтры данных.
+     * @return $this
+     */
+    public function prepareData()
+    {
+        $this->filtered = true;
+        foreach($this->dataFilter as $function) {
+            $this->data = $function($this->data);
+        }
+        return $this;
+    }
+
+    public function getData()
+    {
+        return $this->data;
+    }
 
     public function setPrice($value)
     {
