@@ -37,6 +37,9 @@ return array(
                 'name' => 'Rzn\Order\Order',
                 'shared' => false, // сервис заказа не сохраняется для повторного вызова
                 'injector' => [
+                    'inject' => [
+                        'handler' => 'initializer',
+                    ],
                     'injectOrderItemObject' => [
                         'handler' => 'setter',
                         'options' => [
