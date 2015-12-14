@@ -173,6 +173,24 @@ class Order implements BitrixApplicationInterface
         $this->data = $data;
     }
 
+
+    /**
+     * AFFILIATE_ID
+     *
+     * @param $value
+     */
+    public function setAffiliate($value)
+    {
+        $this->data['AFFILIATE_ID'] = $value;
+        return $this;
+    }
+
+    public function getAffiliate()
+    {
+        return $this->data['AFFILIATE_ID'];
+    }
+
+
     public function setStatus($value)
     {
         $this->data['STATUS_ID'] = $value;
