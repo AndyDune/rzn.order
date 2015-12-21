@@ -9,6 +9,7 @@
  *
  */
 namespace Rzn\Order\Test;
+
 use PHPUnit_Framework_TestCase;
 use Rzn\Library\Registry;
 use Rzn\Order\Mediator\GetOrderData;
@@ -17,6 +18,8 @@ use Bitrix\Main\Loader;
 
 class GetOrderDataTest extends PHPUnit_Framework_TestCase
 {
+    protected $backupGlobals = false;
+
     public function testUse()
     {
         Loader::includeModule('sale');
@@ -39,5 +42,42 @@ class GetOrderDataTest extends PHPUnit_Framework_TestCase
         $sm = Registry::getServiceManager()->get('mediator');
         $data = $sm->publish('getOrderData', ['id' => $orderId]);
         $this->assertEquals($orderId, $data['ID']);
+    }
+
+    public function testWithError()
+    {
+        /** @var \Rzn\Order\Order $orderService */
+        $orderService = Registry::getServiceManager()->get('rzn_order');
+
+        $orderService->setPrice(10)
+        ->setXml(10)
+            ->setStatus(0)
+            //->setCurrency()
+            ->setUserId(1)
+            ->setPersonType(10);
+        $id = $orderService->prepareData()->save();
+        /** @var \CApplicationException $saveError */
+        $saveError = $orderService->getSaveError();
+
+        $this->assertEquals('EMPTY_CURRENCY', $saveError->GetID());
+
+        $this->assertEmpty($id, 'Заказ не должен быть сохранен');
+
+        $orderService->clear();
+        $orderService->setPrice(10)
+            ->setXml(10)
+            ->setStatus(0)
+            ->setCurrency()
+            ->setUserId(1)
+            ->setPersonType(10);
+        $id = $orderService->prepareData()->save();
+        /** @var \CApplicationException $saveError */
+        $saveError = $orderService->getSaveError();
+
+        $this->assertEquals('ERROR_NO_PERSON_TYPE', $saveError->GetID());
+
+        $this->assertEmpty($id, 'Заказ не должен быть сохранен');
+
+
     }
 }
