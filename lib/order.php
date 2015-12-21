@@ -106,8 +106,9 @@ PAY_VOUCHER_DATE - дата платежного поручения.
 namespace Rzn\Order;
 use CSaleOrder;
 use Exception;
+use Rzn\Library\ServiceManager\BitrixApplicationInterface;
 
-class Order 
+class Order implements BitrixApplicationInterface
 {
     protected $id = null;
     protected $data = [];
@@ -128,6 +129,20 @@ class Order
      * @var bool
      */
     protected $filtered   = false;
+
+    protected $application;
+
+    protected $saveError   = null;
+
+    /**
+     * Возврат ошибок сохранения заказа.
+     *
+     * @return \CApplicationException
+     */
+    public function getSaveError()
+    {
+        return $this->saveError;
+    }
 
     public function retrieveWithXId($id)
     {
@@ -157,6 +172,24 @@ class Order
         unset($data['ID']);
         $this->data = $data;
     }
+
+
+    /**
+     * AFFILIATE_ID
+     *
+     * @param $value
+     */
+    public function setAffiliate($value)
+    {
+        $this->data['AFFILIATE_ID'] = $value;
+        return $this;
+    }
+
+    public function getAffiliate()
+    {
+        return $this->data['AFFILIATE_ID'];
+    }
+
 
     public function setStatus($value)
     {
@@ -243,6 +276,18 @@ class Order
         return $this->userId;
     }
 
+    public function setDateInsert($date)
+    {
+        $this->data['DATE_INSERT'] = $date;
+        return $this;
+    }
+
+    public function setAllowDelivery($date)
+    {
+        $this->data['DATE_ALLOW_DELIVERY'] = $date;
+        return $this;
+    }
+
 
     public function getId()
     {
@@ -263,6 +308,9 @@ class Order
             if ($id) {
                 $this->retrieveWithId($id);
             }
+        }
+        if (!$id) {
+            $this->saveError = $this->getApplication()->GetException();
         }
         return $this->id;
     }
@@ -311,7 +359,6 @@ class Order
         }
     }
 
-
     public function getItems()
     {
         if (!$this->id) {
@@ -322,5 +369,22 @@ class Order
             $this->items = $itemsObject->itemsForOrder();
         }
         return $this->items;
+    }
+
+    /**
+     * @param \CMain $application
+     * @return mixed
+     */
+    public function setApplication($application)
+    {
+        $this->application = $application;
+    }
+
+    /**
+     * @return \CMain
+     */
+    public function getApplication()
+    {
+        return $this->application;
     }
 }
