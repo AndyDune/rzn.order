@@ -276,6 +276,18 @@ class Order implements BitrixApplicationInterface
         return $this->userId;
     }
 
+    public function setDateInsert($date)
+    {
+        $this->data['DATE_INSERT'] = $date;
+        return $this;
+    }
+
+    public function setAllowDelivery($date)
+    {
+        $this->data['DATE_ALLOW_DELIVERY'] = $date;
+        return $this;
+    }
+
 
     public function getId()
     {
