@@ -14,7 +14,17 @@ return array(
     'view_helpers' => [
     ],
 
-    'bitrix_events' => [
+    'bitrix_direct_events' => [
+        'sale' => [
+            'OnOrderListFilter' => [
+                'invokables' => [
+                    'AddFilterNotAffiliate'
+                    => ['name' => 'Rzn\Order\DirectEventListener\Sale\OnOrderListFilter\AddFilterNotAffiliate',
+                        'priority' => 90
+                    ],
+                ]
+            ]
+        ]
     ],
     'configurable_event_manager' => [
     ],

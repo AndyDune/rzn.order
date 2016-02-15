@@ -14,14 +14,17 @@ CModule::AddAutoloadClasses(
     []
 );
 
-$eventManager = EventManager::getInstance();
 /**
+ * вынесено в класс Rzn\Order\DirectEventListener\Sale\OnOrderListFilter\AddFilterNotAffiliate
+ *
+$eventManager = EventManager::getInstance();
+
  * Выборка заказов не от филлиата
  * Вот моменты, которые мы будем использовать (bitrix/modules/sale/admin/order.php)
  if (IntVal($filter_affiliate_id)>0) $arFilter["AFFILIATE_ID"] = IntVal($filter_affiliate_id);
 foreach(GetModuleEvents("sale", "OnOrderListFilter", true) as $arEvent)
     $arFilterTmp = ExecuteModuleEventEx($arEvent, Array($arFilterTmp));
- */
+
 
 $eventManager->addEventHandlerCompatible("sale", "OnOrderListFilter", function($filter) {
     if (isset($_REQUEST['filter_affiliate_id']) and substr($_REQUEST['filter_affiliate_id'], 0, 1) == '!') {
@@ -30,3 +33,4 @@ $eventManager->addEventHandlerCompatible("sale", "OnOrderListFilter", function($
     }
     return $filter;
 });
+ */
