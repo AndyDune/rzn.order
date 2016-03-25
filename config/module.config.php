@@ -43,6 +43,10 @@ return array(
     //'waterfall' => require(__DIR__ . '/module.waterfall.config.php'),
     'service_manager' => [
         'invokables' => [
+            'pay_system_action' => [
+                'name' => 'Rzn\Order\PaySystenActionData',
+            ],
+
             'rzn_order' => [
                 'name' => 'Rzn\Order\Order',
                 'shared' => false, // сервис заказа не сохраняется для повторного вызова
