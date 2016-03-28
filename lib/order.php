@@ -104,6 +104,7 @@ PAY_VOUCHER_DATE - дата платежного поручения.
 */
 
 namespace Rzn\Order;
+use Bitrix\Main\Loader;
 use CSaleOrder;
 use Exception;
 use Rzn\Library\ServiceManager\BitrixApplicationInterface;
@@ -133,6 +134,11 @@ class Order implements BitrixApplicationInterface
     protected $application;
 
     protected $saveError   = null;
+
+    public function __construct()
+    {
+        Loader::includeModule('sale');
+    }
 
     /**
      * Возврат ошибок сохранения заказа.
@@ -169,6 +175,7 @@ class Order implements BitrixApplicationInterface
     public function fillWithData($data)
     {
         $this->id = $data['ID'];
+        $this->userId = $data['USER_ID'];
         unset($data['ID']);
         $this->data = $data;
     }
@@ -270,6 +277,17 @@ class Order implements BitrixApplicationInterface
         $this->data['USER_ID'] = $id;
         return $this;
     }
+
+    public function getPaySystemId()
+    {
+        return $this->data['PAY_SYSTEM_ID'];
+    }
+
+    public function getPersonTypeId()
+    {
+        return $this->data['PERSON_TYPE_ID'];
+    }
+
 
     public function getUserId()
     {
