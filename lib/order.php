@@ -106,10 +106,10 @@ PAY_VOUCHER_DATE - дата платежного поручения.
 namespace Rzn\Order;
 use Bitrix\Main\Loader;
 use CSaleOrder;
-use Exception;
 use Rzn\Library\ServiceManager\BitrixApplicationInterface;
+use ArrayAccess;
 
-class Order implements BitrixApplicationInterface
+class Order implements BitrixApplicationInterface, ArrayAccess
 {
     protected $id = null;
     protected $data = [];
@@ -119,6 +119,11 @@ class Order implements BitrixApplicationInterface
     protected $itemBlankObject;
 
     protected $userId = null;
+
+    /**
+     * @var Props
+     */
+    protected $propsConainer = null;
 
     /**
      * @var array
@@ -138,6 +143,17 @@ class Order implements BitrixApplicationInterface
     public function __construct()
     {
         Loader::includeModule('sale');
+    }
+
+    /**
+     * @return Props
+     */
+    public function getPropsContainer()
+    {
+        if (!$this->propsConainer) {
+            $this->propsConainer = new Props($this);
+        }
+        return $this->propsConainer;
     }
 
     /**
@@ -174,6 +190,7 @@ class Order implements BitrixApplicationInterface
 
     public function fillWithData($data)
     {
+        $this->propsConainer = null;
         $this->id = $data['ID'];
         $this->userId = $data['USER_ID'];
         unset($data['ID']);
@@ -197,10 +214,40 @@ class Order implements BitrixApplicationInterface
         return $this->data['AFFILIATE_ID'];
     }
 
+    /**
+     * PAYED
+     *
+     * @param $value
+     */
+    public function setPayed($value, $commit = false)
+    {
+        if ($value) {
+            $value = 'Y';
+        } else {
+            $value = 'N';
+        }
+        $this->data['PAYED'] = $value;
+        if ($commit) {
+            $this->save(['PAYED']);
+        }
+        return $this;
+    }
 
-    public function setStatus($value)
+    public function isPayed()
+    {
+        if ($this->data['PAYED'] == 'Y') {
+            return true;
+        }
+        return false;
+    }
+
+
+    public function setStatus($value, $commit = false)
     {
         $this->data['STATUS_ID'] = $value;
+        if ($commit) {
+            $this->save(['STATUS_ID']);
+        }
         return $this;
     }
 
@@ -258,6 +305,11 @@ class Order implements BitrixApplicationInterface
         return $this;
     }
 
+    public function getPrice()
+    {
+        return $this->data['PRICE'];
+    }
+
     public function setXml($value)
     {
         $this->data['XML_ID'] = $value;
@@ -313,16 +365,26 @@ class Order implements BitrixApplicationInterface
     }
 
 
-    public function save()
+    public function save($keys = null)
     {
         if (!$this->userId) {
             throw new Exception('Для нормального сохранения нужно указать USER_ID');
         }
         $this->data['LID'] = SITE_ID;
-        if ($this->id) {
-            CSaleOrder::Update($this->id, $this->data);
+        if ($keys) {
+            $data = [];
+            foreach($keys as $key) {
+                if (array_key_exists($key, $this->data)) {
+                    $data[$key] = $this->data[$key];
+                }
+            }
         } else {
-            $id = CSaleOrder::Add($this->data);
+            $data = $this->data;
+        }
+        if ($this->id) {
+            CSaleOrder::Update($this->id, $data);
+        } else {
+            $id = CSaleOrder::Add($data);
             if ($id) {
                 $this->retrieveWithId($id);
             }
@@ -404,5 +466,33 @@ class Order implements BitrixApplicationInterface
     public function getApplication()
     {
         return $this->application;
+    }
+
+    /**
+     * @param mixed $key
+     * @return mixed
+     * @access private
+     */
+    public function offsetExists($key)
+    {
+        return !empty($this->data[$key]);
+    }
+    public function offsetGet($key)
+    {
+        if (isset($this->data[$key]))
+            return $this->data[$key];
+        else
+            return null;
+
+    }
+
+    public function offsetSet($key, $value)
+    {
+        $this->data[$key] = $value;
+    }
+
+    public function offsetUnset($key)
+    {
+        unset($this->data[$key]);
     }
 }
